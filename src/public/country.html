@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TV Hub Country</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+</head>
+
+<body class="app-body">
+    <main class="app-shell">
+        <aside class="sidebar"><a class="brand" href="/">TV<span>HUB</span></a>
+            <nav aria-label="Main navigation"><a class="nav-link" href="/">⌂ <span>Home</span></a><a class="nav-link"
+                    href="/favorites.html">☆ <span>Favorites</span></a></nav>
+        </aside>
+        <section class="content">
+            <header class="topbar"><label class="search-box" for="channel-search"><span>⌕</span><input
+                        id="channel-search" type="search" placeholder="Search channels" /></label>
+                <div class="account">
+                    <p id="welcome">Loading your session…</p><button id="logout" class="logout-button">Log out</button>
+                </div>
+            </header><a class="back-link" href="/">← Back to Home</a>
+            <section class="page-hero">
+                <p class="eyebrow">COUNTRY</p>
+                <h1 id="country-name">Channels</h1>
+                <p id="country-status">Loading channels…</p>
+            </section>
+            <section class="browse-section"><label class="filter-control" for="channel-sort">Sort <select
+                        id="channel-sort">
+                        <option value="name">Name A-Z</option>
+                        <option value="newest">Newest first</option>
+                    </select></label>
+                <div id="country-list" class="channel-grid"></div>
+            </section>
+        </section>
+    </main>
+    <script src="/js/country.js"></script>
+</body>
+
+</html>

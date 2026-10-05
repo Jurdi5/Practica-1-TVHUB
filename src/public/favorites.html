@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TV Hub Favorites</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+</head>
+
+<body class="app-body">
+    <main class="app-shell">
+        <aside class="sidebar"><a class="brand" href="/">TV<span>HUB</span></a>
+            <nav aria-label="Main navigation"><a class="nav-link" href="/">⌂ <span>Home</span></a><a
+                    class="nav-link active" href="/favorites.html">☆ <span>Favorites</span></a></nav>
+            <div class="sidebar-note">
+                <p class="eyebrow">YOUR LIBRARY</p>
+                <p>Your saved live channels in one place.</p>
+            </div>
+        </aside>
+        <section class="content">
+            <header class="topbar"><label class="search-box" for="favorite-search"><span>⌕</span><input
+                        id="favorite-search" type="search" placeholder="Search favorites" /></label>
+                <div class="account">
+                    <p id="welcome">Loading your session…</p><button id="logout" class="logout-button">Log out</button>
+                </div>
+            </header>
+            <section class="page-hero">
+                <p class="eyebrow">YOUR LIBRARY</p>
+                <h1>Favorites</h1>
+                <p>Return to the live channels you saved.</p>
+            </section>
+            <section class="browse-section">
+                <div class="section-heading">
+                    <h2>Saved channels</h2>
+                    <p id="favorites-status">Loading favorites…</p>
+                </div><label class="filter-control" for="favorite-sort">Sort <select id="favorite-sort">
+                        <option value="newest">Newest first</option>
+                        <option value="name">Name A-Z</option>
+                    </select></label>
+                <div id="favorites-list" class="channel-grid"></div>
+            </section>
+        </section>
+    </main>
+    <script src="/js/favorites.js"></script>
+</body>
+
+</html>

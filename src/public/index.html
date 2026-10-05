@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TV Hub</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body class="app-body">
+    <main class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/">TV<span>HUB</span></a>
+        <nav aria-label="Main navigation">
+          <a class="nav-link active" href="/">⌂ <span>Home</span></a>
+          <a class="nav-link" href="#browse">▦ <span>Browse channels</span></a>
+          <a class="nav-link" href="/favorites.html">☆ <span>Favorites</span></a>
+        </nav>
+        <div class="sidebar-note">
+          <p class="eyebrow">LIVE TV</p>
+          <p>Discover live channels from countries around the world.</p>
+        </div>
+      </aside>
+      <section class="content">
+        <header class="topbar">
+          <label class="search-box" for="channel-search"><span>⌕</span><input id="channel-search" type="search" placeholder="Search live channels" /></label>
+          <div class="account"><p id="welcome">Loading your session…</p><button id="logout" class="logout-button">Log out</button></div>
+        </header>
+        <section class="hero">
+          <p class="eyebrow">LIVE TELEVISION</p>
+          <h1>Find a channel<br />for every moment.</h1>
+          <p>Browse live channels by country and choose what to watch.</p>
+        </section>
+        <section id="browse" class="browse-section">
+          <div class="section-heading">
+            <div><p class="eyebrow">LIVE CHANNELS</p><h2>Browse by country</h2></div>
+            <p id="channel-status">Loading channels…</p>
+          </div>
+          <label class="filter-control" for="category-filter">Category <select id="category-filter"><option value="">All categories</option></select></label>
+          <div id="channel-list"></div>
+        </section>
+      </section>
+    </main>
+    <script src="/js/home.js"></script>
+  </body>
+</html>

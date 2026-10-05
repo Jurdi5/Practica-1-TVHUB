@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Watch · TV Hub</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.15.12/dist/shaka-player.compiled.min.js"></script>
+</head>
+
+<body class="app-body">
+    <main class="app-shell">
+        <aside class="sidebar"><a class="brand" href="/">TV<span>HUB</span></a>
+            <nav aria-label="Main navigation"><a class="nav-link" href="/">⌂ <span>Home</span></a><a class="nav-link"
+                    href="/favorites.html">☆ <span>Favorites</span></a></nav>
+        </aside>
+        <section class="content">
+            <header class="topbar"><a class="back-link" href="javascript:history.back()">← Back</a>
+                <div class="account">
+                    <p id="welcome">Loading your session…</p><button id="logout" class="logout-button">Log out</button>
+                </div>
+            </header>
+            <section class="watch-layout">
+                <div class="player-shell">
+                    <p id="player-status" class="player-status">Loading channel…</p><video id="video-player"
+                        class="video-player" controls autoplay></video><button id="retry-player" class="retry-button"
+                        hidden>Try again</button>
+                </div>
+                <article class="channel-details"><img id="channel-logo" class="detail-logo"
+                        src="/images/channel-placeholder.svg" alt="" />
+                    <div>
+                        <p class="eyebrow">LIVE CHANNEL</p>
+                        <h1 id="channel-name">Loading…</h1>
+                        <p id="channel-country"></p>
+                        <p id="channel-categories" class="channel-categories"></p><button id="favorite-button"
+                            class="watch-favorite" type="button" hidden></button>
+                    </div>
+                </article>
+            </section>
+        </section>
+    </main>
+    <script src="/js/watch.js"></script>
+</body>
+
+</html>
