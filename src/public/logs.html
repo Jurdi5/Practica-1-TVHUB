@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TV Hub Logs</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body class="app-body">
+    <main class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/">TV<span>HUB</span></a>
+        <nav id="admin-navigation" aria-label="Main navigation" hidden>
+          <a class="nav-link" href="/">⌂ <span>Home</span></a>
+          <a class="nav-link" href="/reports.html">⚐ <span>My reports</span></a>
+          <a class="nav-link" href="/support-reports.html">⚐ <span>Support</span></a>
+          <a class="nav-link" href="/support-metrics.html">▦ <span>Metrics</span></a>
+          <a class="nav-link active" href="/logs.html">≡ <span>Logs</span></a>
+        </nav>
+      </aside>
+      <section class="content">
+        <header class="topbar"><div></div><div class="account"><p id="welcome">Loading your session…</p><button id="logout" class="logout-button">Log out</button></div></header>
+        <section class="page-hero"><p class="eyebrow">SUPPORT OPERATIONS</p><h1>Logs</h1><p>Report history and security activity.</p></section>
+        <section class="browse-section">
+          <form id="logs-filters" class="logs-filters">
+            <label>Search <input id="log-search" type="search" maxlength="100" placeholder="Action, email, or ID" /></label>
+            <label>Category <select id="log-category"><option value="">All</option><option value="REPORT">REPORT</option><option value="SECURITY">SECURITY</option></select></label>
+            <label>Action <select id="log-action"><option value="">All</option></select></label>
+            <label>Actor type <select id="log-actor-type"><option value="">All</option><option>USER</option><option>ADMIN</option><option>SYSTEM</option><option>ANONYMOUS</option></select></label>
+            <label>Resource type <select id="log-resource-type"><option value="">All</option><option>REPORT</option><option>SESSION</option><option>AUTH</option><option>USER</option></select></label>
+            <label>Sort by <select id="log-sort"><option value="createdAt">Date</option></select></label>
+            <label>Order <select id="log-order"><option value="desc">Newest first</option><option value="asc">Oldest first</option></select></label>
+            <button type="submit">Apply</button>
+          </form>
+          <p id="logs-status" aria-live="polite">Loading logs…</p>
+          <div id="logs-list" class="logs-list"></div>
+          <div class="logs-pagination"><button id="previous-logs" type="button">Previous</button><span id="logs-page"></span><button id="next-logs" type="button">Next</button></div>
+        </section>
+      </section>
+    </main>
+    <script src="/js/logs.js"></script>
+  </body>
+</html>

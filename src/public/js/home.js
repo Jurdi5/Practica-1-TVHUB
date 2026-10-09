@@ -33,6 +33,10 @@ function openChannel(channelId) {
   location.href = `/watch.html?${new URLSearchParams({ channelId })}`;
 }
 
+function reportChannel(channelId) {
+  location.href = `/reports.html?${new URLSearchParams({ channelId })}`;
+}
+
 function createChannelCard(channel) {
   const card = document.createElement('article');
   card.className = 'channel-card';
@@ -57,9 +61,18 @@ function createChannelCard(channel) {
   favoriteButton.textContent = isFavorite ? '★' : '☆';
   favoriteButton.setAttribute('aria-label', isFavorite ? `Remove ${channel.name} from favorites` : `Add ${channel.name} to favorites`);
   favoriteButton.addEventListener('click', (event) => { event.stopPropagation(); toggleFavorite(channel._id); });
+  const reportButton = document.createElement('button');
+  reportButton.type = 'button';
+  reportButton.className = 'report-button';
+  reportButton.textContent = 'Report problem';
+  reportButton.setAttribute('aria-label', `Report a problem with ${channel.name}`);
+  reportButton.addEventListener('click', (event) => { event.stopPropagation(); reportChannel(channel._id); });
   const header = document.createElement('div');
   header.className = 'channel-card-header';
-  header.append(name, favoriteButton);
+  const actions = document.createElement('div');
+  actions.className = 'channel-card-actions';
+  actions.append(favoriteButton, reportButton);
+  header.append(name, actions);
   const country = document.createElement('p');
   country.className = 'channel-country';
   country.textContent = channel.country;

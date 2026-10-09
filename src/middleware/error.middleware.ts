@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler, RequestHandler } from 'express';
+import multer from 'multer';
 import { AppError } from '../utils/app-error.js';
 
 export const notFound: RequestHandler = (_request, response) => {
@@ -8,6 +9,14 @@ export const notFound: RequestHandler = (_request, response) => {
 export const errorHandler: ErrorRequestHandler = (error: unknown, _request, response, _next) => {
   if (error instanceof AppError) {
     response.status(error.status).json({ error: { code: error.code, message: error.message } });
+    return;
+  }
+
+  if (error instanceof multer.MulterError) {
+    const message = error.code === 'LIMIT_FILE_SIZE'
+      ? 'Evidence image must be 2 MB or smaller'
+      : 'Could not upload evidence image';
+    response.status(400).json({ error: { code: 'UPLOAD_ERROR', message } });
     return;
   }
 

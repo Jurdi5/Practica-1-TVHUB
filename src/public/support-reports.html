@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TV Hub Support Dashboard</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body class="app-body">
+    <main class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/">TV<span>HUB</span></a>
+        <nav aria-label="Main navigation">
+          <a class="nav-link" href="/">⌂ <span>Home</span></a>
+          <a class="nav-link" href="/reports.html">⚐ <span>My reports</span></a>
+          <a class="nav-link active" href="/support-reports.html">⚐ <span>Support</span></a>
+          <a class="nav-link" href="/support-metrics.html">▦ <span>Metrics</span></a>
+          <a id="logs-link" class="nav-link" href="/logs.html" hidden>≡ <span>Logs</span></a>
+        </nav>
+        <div class="sidebar-note"><p class="eyebrow">SUPPORT OPERATIONS</p><p>Incoming reports update automatically.</p></div>
+      </aside>
+      <section class="content">
+        <header class="topbar"><div></div><div class="account"><p id="welcome">Loading your session…</p><button id="logout" class="logout-button">Log out</button></div></header>
+        <section class="page-hero"><p class="eyebrow">SUPPORT DASHBOARD</p><h1>All reports</h1><p>New reports and automatic escalations appear without refreshing.</p></section>
+        <section class="browse-section">
+          <div class="section-heading"><h2>Report queue</h2><label>Show <select id="reports-filter"><option value="open">Open</option><option value="closed">Closed</option><option value="all">All</option></select></label><p id="reports-status">Loading reports…</p></div>
+          <div id="reports-list" class="reports-list"></div>
+        </section>
+        <section id="report-logs-panel" class="report-panel report-logs-panel" hidden>
+          <div class="section-heading"><h2 id="report-logs-title">Report logs</h2><button id="close-report-logs" type="button">Close</button></div>
+          <p id="report-logs-status" aria-live="polite"></p>
+          <div id="report-logs-list" class="logs-list"></div>
+        </section>
+      </section>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/support-reports.js"></script>
+  </body>
+</html>

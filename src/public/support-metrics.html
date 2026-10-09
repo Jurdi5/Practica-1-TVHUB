@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TV Hub Support Metrics</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body class="app-body">
+    <main class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/">TV<span>HUB</span></a>
+        <nav aria-label="Main navigation">
+          <a class="nav-link" href="/">⌂ <span>Home</span></a>
+          <a class="nav-link" href="/reports.html">⚐ <span>My reports</span></a>
+          <a class="nav-link" href="/support-reports.html">⚐ <span>Support</span></a>
+          <a class="nav-link active" href="/support-metrics.html">▦ <span>Metrics</span></a>
+          <a id="logs-link" class="nav-link" href="/logs.html" hidden>≡ <span>Logs</span></a>
+        </nav>
+      </aside>
+      <section class="content">
+        <header class="topbar"><div></div><div class="account"><p id="welcome">Loading your session…</p><button id="logout" class="logout-button">Log out</button></div></header>
+        <section class="page-hero"><p class="eyebrow">SUPPORT METRICS</p><h1>Attention trends</h1><p>Resolved Reports and average response time over the last 14 days.</p></section>
+        <section class="report-panel support-metrics-panel">
+          <canvas id="support-metrics-chart" aria-label="Resolved reports and average response time by day"></canvas>
+        </section>
+      </section>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/vendor/chart.js/chart.umd.js"></script>
+    <script src="/js/support-metrics.js"></script>
+  </body>
+</html>

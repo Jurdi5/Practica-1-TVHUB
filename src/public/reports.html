@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TV Hub Reports</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body class="app-body">
+    <main class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/">TV<span>HUB</span></a>
+        <nav aria-label="Main navigation">
+          <a class="nav-link" href="/">⌂ <span>Home</span></a>
+          <a class="nav-link" href="/favorites.html">☆ <span>Favorites</span></a>
+          <a class="nav-link active" href="/reports.html">⚐ <span>Reports</span></a>
+        </nav>
+        <div class="sidebar-note"><p class="eyebrow">CHANNEL HELP</p><p>Tell us when a live channel has a problem.</p></div>
+      </aside>
+      <section class="content">
+        <header class="topbar"><div></div><div class="account"><p id="welcome">Loading your session…</p><button id="logout" class="logout-button">Log out</button></div></header>
+        <section class="page-hero"><p class="eyebrow">CHANNEL REPORTS</p><h1>Reports</h1><p>Share a problem with a channel and attach images if they help explain it.</p></section>
+        <section id="report-form-section" class="report-panel" hidden>
+          <h2>Report a problem</h2>
+          <p id="report-channel">Selected channel</p>
+          <form id="report-form">
+            <input id="report-channel-id" name="channelId" type="hidden" />
+            <label for="report-reason">Reason
+              <select id="report-reason" name="reason" required>
+                <option value="">Choose a reason</option>
+                <option value="STREAM_DOES_NOT_LOAD">Stream does not load</option>
+                <option value="WRONG_CHANNEL">Wrong channel</option>
+                <option value="AUDIO_PROBLEM">Audio problem</option>
+                <option value="VIDEO_PROBLEM">Video problem</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </label>
+            <label for="report-description">Description
+              <textarea id="report-description" name="description" maxlength="1000" required></textarea>
+            </label>
+            <label for="report-evidence">Evidence images (optional, up to 5)
+              <input id="report-evidence" name="evidence" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple />
+            </label>
+            <button type="submit">Submit report</button>
+            <p id="report-form-status" class="form-status" aria-live="polite"></p>
+          </form>
+        </section>
+        <section class="browse-section">
+          <div class="section-heading"><h2>My reports</h2><label>Show <select id="reports-filter"><option value="open">Open</option><option value="closed">Closed</option><option value="all">All</option></select></label><p id="reports-status">Loading reports…</p></div>
+          <div id="reports-list" class="reports-list"></div>
+        </section>
+      </section>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/reports.js"></script>
+  </body>
+</html>

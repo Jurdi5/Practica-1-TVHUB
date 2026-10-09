@@ -12,6 +12,8 @@ import {
 } from "../utils/jwt.js";
 import { comparePassword, hashPassword } from "../utils/password.js";
 import { hashRefreshToken, refreshTokenMatches } from "../utils/token-hash.js";
+import { recordAuditLog } from '../audit/audit-log.js';
+import { AuditLog } from '../models/audit-log.model.js';
 
 type Credentials = { email?: unknown; password?: unknown };
 
@@ -38,7 +40,7 @@ function readCredentials(body: Credentials): {
 }
 
 // Helper para devolver un objeto de usuario público que contiene solo los campos necesarios para la respuesta
-// para no devolver todo el documento MongoDB y exponer información sensible como el hash de la contraseña.
+// para no devolver el documento MongoDB completo y exponer información sensible como el hash de la contraseña.
 function publicUser(user: { _id: Types.ObjectId; email: string; role: Role }) {
   return { id: user._id.toString(), email: user.email, role: user.role };
 }
@@ -63,7 +65,34 @@ async function createSessionTokens(
     userAgent,
   });
 
-  return { accessToken: createAccessToken(userId, user.role), refreshToken };
+  await recordAuditLog({
+    category: 'SECURITY', action: 'SESSION_CREATED', actorType: user.role,
+    actorId: userId, resourceType: 'SESSION', resourceId: sessionId.toString(),
+    sessionId: sessionId.toString(), metadata: { role: user.role, userAgent: userAgent?.slice(0, 200) }
+  });
+
+  return { accessToken: createAccessToken(userId, user.role), refreshToken, sessionId: sessionId.toString() };
+}
+
+async function auditRefreshFailure(reason: string, userId?: string, sessionId?: string): Promise<void> {
+  await recordAuditLog({
+    category: 'SECURITY', action: 'AUTH_REFRESH_FAILURE', actorType: userId ? 'USER' : 'ANONYMOUS',
+    actorId: userId, resourceType: sessionId ? 'SESSION' : 'AUTH', resourceId: sessionId,
+    sessionId, metadata: { reason }
+  });
+}
+
+async function auditExpiredSession(sessionId: string, userId: string): Promise<void> {
+  try {
+    if (await AuditLog.exists({ action: 'SESSION_EXPIRED', sessionId })) return;
+    await recordAuditLog({
+      category: 'SECURITY', action: 'SESSION_EXPIRED', actorType: 'SYSTEM',
+      resourceType: 'SESSION', resourceId: sessionId, sessionId,
+      metadata: { userId }
+    });
+  } catch {
+    console.error('Could not check session expiration audit log');
+  }
 }
 
 // Lee y valida si en MongoDB ya existe un usuario con el mismo email, si no existe,
@@ -87,14 +116,33 @@ export const register: RequestHandler = async (request, response) => {
 };
 
 export const login: RequestHandler = async (request, response) => {
-  const { email, password } = readCredentials(request.body);
+  let credentials: ReturnType<typeof readCredentials>;
+  try {
+    credentials = readCredentials(request.body);
+  } catch (error) {
+    await recordAuditLog({
+      category: 'SECURITY', action: 'AUTH_LOGIN_FAILURE', actorType: 'ANONYMOUS', resourceType: 'AUTH',
+      metadata: { attemptedEmail: typeof request.body?.email === 'string' ? request.body.email.trim().toLowerCase().slice(0, 200) : '', reason: 'VALIDATION_ERROR', ip: request.ip }
+    });
+    throw error;
+  }
+  const { email, password } = credentials;
   const user = await User.findOne({ email });
 
   if (!user || !(await comparePassword(password, user.passwordHash))) {
+    await recordAuditLog({
+      category: 'SECURITY', action: 'AUTH_LOGIN_FAILURE', actorType: 'ANONYMOUS', resourceType: 'AUTH',
+      metadata: { attemptedEmail: email.slice(0, 200), reason: 'INVALID_CREDENTIALS', ip: request.ip }
+    });
     throw new AppError(401, "INVALID_CREDENTIALS", "Invalid email or password");
   }
 
   const tokens = await createSessionTokens(user, request.get("user-agent"));
+  await recordAuditLog({
+    category: 'SECURITY', action: 'AUTH_LOGIN_SUCCESS', actorType: user.role,
+    actorId: user.id, resourceType: 'AUTH', resourceId: user.id, sessionId: tokens.sessionId,
+    metadata: { email: user.email, role: user.role, ip: request.ip }
+  });
   setAuthCookies(response, tokens.accessToken, tokens.refreshToken);
   response.json({ user: publicUser(user) });
 };
@@ -109,6 +157,7 @@ export const login: RequestHandler = async (request, response) => {
 export const refresh: RequestHandler = async (request, response) => {
   const refreshToken = request.cookies.refreshToken;
   if (typeof refreshToken !== "string") {
+    await auditRefreshFailure('MISSING_TOKEN');
     throw new AppError(401, "UNAUTHORIZED", "Refresh token is required");
   }
 
@@ -116,23 +165,25 @@ export const refresh: RequestHandler = async (request, response) => {
   try {
     payload = verifyRefreshToken(refreshToken);
   } catch {
+    await auditRefreshFailure('INVALID_OR_EXPIRED_TOKEN');
     throw new AppError(401, "UNAUTHORIZED", "Invalid or expired refresh token");
   }
 
   const session = await Session.findById(payload.sid);
-  const isValidSession =
-    session &&
-    session.userId.toString() === payload.sub &&
-    !session.revokedAt &&
-    session.expiresAt > new Date() &&
-    refreshTokenMatches(refreshToken, session.refreshTokenHash);
-
-  if (!isValidSession) {
+  const failureReason = !session ? 'SESSION_NOT_FOUND'
+    : session.userId.toString() !== payload.sub ? 'SESSION_USER_MISMATCH'
+      : session.revokedAt ? 'SESSION_REVOKED'
+        : session.expiresAt <= new Date() ? 'SESSION_EXPIRED'
+          : !refreshTokenMatches(refreshToken, session.refreshTokenHash) ? 'TOKEN_MISMATCH' : undefined;
+  if (!session || failureReason) {
+    if (failureReason === 'SESSION_EXPIRED' && session) await auditExpiredSession(session.id, payload.sub);
+    await auditRefreshFailure(failureReason ?? 'SESSION_NOT_FOUND', session?.userId.toString() === payload.sub ? payload.sub : undefined, payload.sid);
     throw new AppError(401, "UNAUTHORIZED", "Invalid or expired refresh token");
   }
 
   const user = await User.findById(payload.sub);
   if (!user) {
+    await auditRefreshFailure('USER_NOT_FOUND', payload.sub, session.id);
     throw new AppError(401, "UNAUTHORIZED", "User no longer exists");
   }
 
@@ -140,6 +191,12 @@ export const refresh: RequestHandler = async (request, response) => {
   session.refreshTokenHash = hashRefreshToken(newRefreshToken);
   session.expiresAt = refreshTokenExpiresAt();
   await session.save();
+
+  await recordAuditLog({
+    category: 'SECURITY', action: 'AUTH_REFRESH_SUCCESS', actorType: user.role,
+    actorId: user.id, resourceType: 'SESSION', resourceId: session.id, sessionId: session.id,
+    metadata: { role: user.role, rotated: true }
+  });
 
   setAuthCookies(
     response,
@@ -176,6 +233,22 @@ export const logout: RequestHandler = async (request, response) => {
 
   session.revokedAt = new Date();
   await session.save();
+  let role: Role = 'USER';
+  try {
+    role = (await User.findById(payload.sub).select('role'))?.role ?? 'USER';
+  } catch {
+    console.error('Could not resolve role for logout audit log');
+  }
+  await recordAuditLog({
+    category: 'SECURITY', action: 'AUTH_LOGOUT', actorType: role, actorId: payload.sub,
+    resourceType: 'SESSION', resourceId: session.id, sessionId: session.id,
+    metadata: { reason: 'LOGOUT' }
+  });
+  await recordAuditLog({
+    category: 'SECURITY', action: 'SESSION_TERMINATED', actorType: role, actorId: payload.sub,
+    resourceType: 'SESSION', resourceId: session.id, sessionId: session.id,
+    metadata: { reason: 'LOGOUT' }
+  });
   clearAuthCookies(response);
   response.status(204).send();
 };
@@ -185,10 +258,22 @@ export const logoutAll: RequestHandler = async (request, response) => {
   if (!auth)
     throw new AppError(401, "UNAUTHORIZED", "Authentication is required");
 
+  const sessions = await Session.find({ userId: auth.userId, revokedAt: { $exists: false } }).select('_id');
   await Session.updateMany(
-    { userId: auth.userId, revokedAt: { $exists: false } },
+    { _id: { $in: sessions.map((session) => session._id) }, revokedAt: { $exists: false } },
     { $set: { revokedAt: new Date() } },
   );
+  await recordAuditLog({
+    category: 'SECURITY', action: 'AUTH_LOGOUT', actorType: auth.role, actorId: auth.userId,
+    resourceType: 'AUTH', resourceId: auth.userId, metadata: { reason: 'LOGOUT_ALL', sessionCount: sessions.length }
+  });
+  for (const session of sessions) {
+    await recordAuditLog({
+      category: 'SECURITY', action: 'SESSION_TERMINATED', actorType: auth.role, actorId: auth.userId,
+      resourceType: 'SESSION', resourceId: session.id, sessionId: session.id,
+      metadata: { reason: 'LOGOUT_ALL' }
+    });
+  }
   clearAuthCookies(response);
   response.status(204).send();
 };
